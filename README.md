@@ -19,3 +19,9 @@ exports.helloWorld = onRequest((req, res) => {
 })
 
 ```
+
+1. enable firestore database in your firebase project
+2. npm install @kessler/firebase-events
+3. update your function code
+4. deploy your function
+
