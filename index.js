@@ -1,25 +1,31 @@
 const { initializeApp, applicationDefault } = require('firebase-admin/app')
 const { getFirestore, Timestamp } = require('firebase-admin/firestore')
 
-async function open(environment = 'cloud-function') {
+try {
+  initializeApp({
+    credential: applicationDefault()
+  })    
+} catch (e) {
+  console.error(e)
+  console.error('You must run this function in a firebase environment')
+}
+
+async function open({ collectionName = 'events', environment = 'cloud-function' } = {}) {
   if (environment !== 'cloud-function') {
     throw new Error('environment must be cloud-function')
   }
 
-  initializeApp({
-    credential: applicationDefault()
-  })
-  
   const db = getFirestore()
 
   return {
     db,
     newEvent,
-    updateEvent
+    updateEvent,
+    timer
   }
 
   async function newEvent(data) {
-    const docRef = db.collection('events').doc()
+    const docRef = db.collection(collectionName).doc()
     
     await docRef.set({
       ...data,
@@ -34,7 +40,7 @@ async function open(environment = 'cloud-function') {
       id = id.id
     }
 
-    const docRef = db.collection('events').doc(id)
+    const docRef = db.collection(collectionName).doc(id)
     
     await docRef.update({
       ...data,
@@ -42,6 +48,18 @@ async function open(environment = 'cloud-function') {
     })
 
     return docRef
+  }
+
+  function timer(eventName, data = {}) {
+    const start = Date.now()
+
+    return {
+      send: async () => {
+        const end = Date.now()
+        const duration = end - start
+        return newEvent({ eventName, duration, start, end, ...data })
+      }
+    }
   }
 }
 
