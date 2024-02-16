@@ -29,7 +29,7 @@ const { open } = require('@kessler/firebase-events')
 const { onRequest } = require('firebase-functions/v2/https')
 const logger = require('firebase-functions/logger')
 
-exports.helloWorld = onRequest((req, res) => {
+exports.helloWorld = onRequest(async (req, res) => {
   const { timer } = await open()
   const timerEvent = timer('function_duration', { fnName: 'helloWorld2' })
   logger.info('Hello logs!', { structuredData: true })
